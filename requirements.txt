@@ -8,3 +8,6 @@ werkzeug==0.16.1
 flask_sqlalchemy==2.1
 flask_migrate==2.5.3
 psycopg2==2.8.6
+email_validator=1.1.2
+flask_admin=1.5.7
+python_dotenv=0.15.0
