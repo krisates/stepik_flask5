@@ -1,0 +1,8 @@
+<div class="card mb-3">
+    <img src="/static/pictures/{{ dish.picture }}" width="300" height="200" class="card-img-top" alt="">
+    <div class="card-body">
+        <h4 class="h5 card-title">{{ dish.title }}</h4>
+        <p class="card-text">{{ dish.description }}</p>
+        <a href="/addtocart/{{ dish.id }}/" data-id="{{ dish.id }}" class="btn btn-danger">В корзину</a>
+    </div>
+</div>
