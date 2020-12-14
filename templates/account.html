@@ -7,7 +7,7 @@
     <section class="row">
       <div class="col-12 col-lg-8">
         <h1 class="h3 my-5">Личный кабинет. Заказы</h1>
-        {% for order in user.orders %}
+        {% for order in orders %}
             {% include '_parts/order.html' %}
         {% endfor %}
       </div>

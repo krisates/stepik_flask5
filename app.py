@@ -1,10 +1,12 @@
 import hashlib
 import forms
+import json
 from flask import Flask, render_template, session, redirect, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
+from datetime import date
 from config import Config
 
 
@@ -46,7 +48,7 @@ def get_cart():
 @app.route('/')
 def route_main():
     return render_template(
-        'main.html', categories=db.session.query(Category).all(), cart=session.get("cart", [])
+        'main.html', categories=db.session.query(Category).all(), cart=get_cart()
     )
 
 
@@ -58,31 +60,52 @@ def route_addtocart(item):
     return redirect("/cart/")
 
 
-@app.route('/cart/')
+@app.route('/removefromcart/<item>/')
+def route_removefromcart(item):
+    cart = session.get("cart", [])
+    cart.remove(item)
+    session['cart'] = cart
+    session['is_deleted'] = True
+    return redirect("/cart/")
+
+
+@app.route('/cart/', methods=["GET", "POST"])
 def route_cart():
+    is_deleted = False
+
     if request.method == "POST":
 
         # Получаем отправленные данные
-        name = request.form.get("name")
+        # name = request.form.get("name")
         mail = request.form.get("email")
         address = request.form.get("address")
         phone = request.form.get("phone")
-        address = request.form.get("order_summ")
-        dishes = request.form.get("order_cart")
+        price = request.form.get("price")
+        dishes = request.form.get("dishes")
 
-        user = db.session.query(User).filter(User.password == password, User.mail == email).first()
-        # Проверяем полученные данные
-        if user:
+        order = Order(
+            #name=name,
+            date=date.today(),
+            mail=mail,
+            address=address,
+            phone=phone,
+            price=price,
+            status_id=0,
+            dishes=dishes,
+            user_id=session["user_id"]
+        )
+        db.session.add(order)
+        db.session.commit()
+        session["cart"] = []
 
-            # Устанавливаем в сессии признак, что пользователь аутентифицирован
-            session["is_auth"] = True
-            session["user_id"] = user.id
-            session["user_email"] = user.mail
+        return redirect("/ordered/")
 
-            # Редиректим пользователя на приватную страницу
-            return redirect("/account/")
+    if session.get('is_deleted', False):
+        is_deleted = True
+        session['is_deleted'] = False
+
     return render_template(
-        'cart.html', cart=get_cart(), form=forms.OrderForm()
+        'cart.html', cart=get_cart(), form=forms.OrderForm(), is_deleted=is_deleted
     )
 
 
@@ -98,8 +121,23 @@ def route_account():
     if not user:
         return redirect("/auth/")
 
+   # dishes_list = db.session.query(Dish).all()
+   # dishes = {}
+   # for dish in dishes_list:
+   #     dishes.update({'id':dish.id, 'title':dish.title, 'price':dish.price})
+
+    orders = db.session.query(Order).filter(Order.user_id == session['user_id']).all()
+    order_list = []
+    for order in orders:
+        order_array = order.dishes.replace('[','').replace(']','').replace("'",'').split(',')
+        dishes = []
+        for dish_id in order_array:
+            dishes.append(db.session.query(Dish).filter(Dish.id == dish_id).first())
+
+        order_list.append({'dishes': dishes, 'date':order.date, 'price':order.price})
+
     return render_template(
-        'account.html', user=user
+        'account.html', user=user, cart=get_cart(), orders=order_list #, dishes=dishes
     )
 
 
@@ -138,7 +176,7 @@ def route_auth():
 
     # Отображаем форму аутентификации
     return render_template(
-        'auth.html', form=forms.AuthForm()
+        'auth.html', form=forms.AuthForm(), cart=get_cart()
     )
 
 
@@ -179,7 +217,7 @@ def route_register():
             error_msg = "Неверное имя или пароль"
 
     return render_template(
-        'register.html', form=forms.AuthForm()
+        'register.html', form=forms.AuthForm(), cart=get_cart()
     )
 
 
@@ -192,7 +230,7 @@ def route_logout():
 @app.route('/ordered/')
 def route_ordered():
     return render_template(
-        'ordered.html',
+        'ordered.html', cart=get_cart()
     )
 
 

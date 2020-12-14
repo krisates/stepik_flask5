@@ -34,6 +34,7 @@ def upgrade():
         sa.Column('description', sa.VARCHAR(), autoincrement=False, nullable=True),
         sa.Column('picture', sa.VARCHAR(), autoincrement=False, nullable=True),
         sa.Column('category_id', sa.INTEGER(), autoincrement=False, nullable=True),
+        sa.PrimaryKeyConstraint('id', name='dish_pkey'),
         sa.ForeignKeyConstraint(['category_id'], ['category.id'], name='dish_category_id_fkey'),
     )
 
@@ -56,6 +57,7 @@ def upgrade():
         sa.Column('address', sa.VARCHAR(), autoincrement=False, nullable=True),
         sa.Column('dishes', sa.VARCHAR(), autoincrement=False, nullable=True),
         sa.Column('user_id', sa.INTEGER(), autoincrement=False, nullable=True),
+        sa.PrimaryKeyConstraint('id', name='order_pkey'),
         sa.ForeignKeyConstraint(['user_id'], ['user.id'], name='order_user_id_fkey'),
     )
 

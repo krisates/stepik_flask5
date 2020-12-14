@@ -7,7 +7,7 @@ csrf = CSRFProtect()
 
 
 class OrderForm(FlaskForm):
-    name = StringField('Ваше имя', [InputRequired(message="Необходимо указать имя")])
+   # name = StringField('Ваше имя', [InputRequired(message="Необходимо указать имя")])
     address = StringField('Адрес')
     email = StringField('Email', [Email(message="Необходимо указать email")])
     phone = StringField('Телефон', [InputRequired(message="Необходимо указать телефон")])
